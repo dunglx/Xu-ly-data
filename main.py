@@ -2,10 +2,12 @@
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+
 import csv
 import os.path
 from tkinter import *
 from tkinter import filedialog
+from tkinter import ttk
 import array as bitrate
 import json
 import matplotlib.pyplot as plt
@@ -13,17 +15,28 @@ import datetime
 import numpy
 
 
-path_csv = '/home/dunglx/Working/Performance/csv/result.csv'
-path_raw = '/home/dunglx/Working/Performance/raw'
+throughput_path_output = '/home/dunglx/Working/Performance/csv/result.csv'
+throughput_path_input = '/home/dunglx/Working/Performance/raw'
+
+latency_path_output = '/home/dunglx/Working/Performance/csv/result.csv'
+latency_path_input = '/home/dunglx/Working/Performance/raw'
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
-    # Ham xu ly browse Files
-    def browsefiles():
-        global path_raw
+    # Ham xu ly browse Files throughput input
+    def browsefiles_throughput_input():
+        global throughput_path_input
         filename = filedialog.askopenfile(initialdir="/home/dunglx/Working/Performance/raw", title="Select a File", filetypes=(("Text files", "*.txt"),("Json files", "*.json"),("All files", "*.*")))
-        path_raw = filename
+        throughput_path_input = filename
+        entry_throughput_input.insert(0, throughput_path_input.name)
+
+    # Ham xu ly browse Files throughput input
+    def browsefiles_latency_input():
+        global latency_path_input
+        filename = filedialog.askopenfile(initialdir="/home/dunglx/Working/Performance/raw", title="Select a File", filetypes=(("Text files", "*.txt"),("Json files", "*.json"),("All files", "*.*")))
+        latency_path_input = filename
+        entry_throughput_input.insert(0, latency_path_input.name)
 
     # Ham xu ly khi click vao button Export
     def export_configuration():
@@ -44,14 +57,14 @@ if __name__ == '__main__':
         button_dir = Button(dir_export_frame, text="...")
         button_dir.grid(row=0, column=2)
 
-        button_process = Button(window_export, text="OK", command=processfiles)
+        button_process = Button(window_export, text="OK", command=process_throughput_input)
         button_process.pack()
         dir_export = filedialog.askdirectory()
         global path_csv
         path_csv = dir_export
         print(path_csv)
 
-    def processfiles():
+    def process_throughput_input():
         a = bitrate.array('d', [0.0])  # Mbps
         b = bitrate.array('i', [0])  # seconds
         # a = []
@@ -132,18 +145,56 @@ if __name__ == '__main__':
         plt.text(x_text + 8, y_text - 30, max_throughput)
         plt.show()
 
-    #  Tao giao dien chinh
+    # 1. Tao cua so giao dien chinh
     window = Tk()
     window.title('Tool xu ly ket qua Test')
     window.geometry("500x500")
     window.config(background="white")
-    label_file_explorer = Label(window, text="Browse to result file in raw (.json, .txt, ...")
-    label_file_explorer.pack()
-    button_explore = Button(window, text="Browse result file", command=browsefiles)
-    button_explore.pack()
 
-    button_export = Button(window, text="Export", command=export_configuration)
+    # 2. Tao cac tabs tren cua so chinh
+    tabsystem = ttk.Notebook(window)
+    tab_throughput = Frame(tabsystem)
+    tab_latency = Frame(tabsystem)
+
+    # 2.1 Tab throughput
+    tabsystem.add(tab_throughput, text="Throughput")
+    tabsystem.add(tab_latency, text="Latency")
+    tabsystem.pack(expand=1, fill="both")
+
+    label_file_explorer = Label(tab_throughput, text="Xu ly ket qua test Throughput (.json, .txt, ...")
+    label_file_explorer.pack()
+
+    # 2.1.1 Frame input trong Tab Throughput
+    frame_throughput_input = Frame(tab_throughput)
+    frame_throughput_input.pack()
+
+    label_throughput_input = Label(frame_throughput_input, text="Input: ")
+    label_throughput_input.grid(row=0, column=0)
+
+    entry_throughput_input = Entry(frame_throughput_input)
+    entry_throughput_input.grid(row=0, column=1)
+
+    button_throughput_explore = Button(frame_throughput_input, text="...", command=browsefiles_throughput_input)
+    button_throughput_explore.grid(row=0, column=2)
+
+    # 2.1.2 Frame output trong Tab Throughput
+    frame_throughput_output = Frame(tab_throughput)
+    frame_throughput_output.pack()
+
+    label_throughput_output = Label(frame_throughput_output, text="Output: ")
+    label_throughput_output.grid(row=0, column=0)
+
+    label_throughput_output = Entry(frame_throughput_input)
+    label_throughput_output.grid(row=0, column=1)
+
+    button_throughput_explore = Button(frame_throughput_input, text="...", command=browsefiles_throughput_output)
+    button_throughput_explore.grid(row=0, column=2)
+
+    button_export = Button(tab_throughput, text="Export", command=export_configuration)
     button_export.pack()
+
+    # 2.2 Tab Latency
+
     window.mainloop()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
@@ -151,3 +202,4 @@ if __name__ == '__main__':
 # 1. Thêm các check điều kiện tồn tại file hoặc đường dẫn trước khi thực thi
 # 2. Thêm nút settings để cấu hình các thông tin: Đường dẫn file export, ...
 # 3. Thêm nút export ra kết quả rồi cấu hình thêm tên, đường dẫn sau đó chọn OK -> Xử lý ra file kết quả
+# 4. Chuyển tab trên giao diện chính cho các chức năng xử lý kết quả Throughput và Latency
