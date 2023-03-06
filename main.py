@@ -15,11 +15,15 @@ import datetime
 import numpy
 
 
-throughput_path_output = '/home/dunglx/Working/Performance/csv/result.csv'
-throughput_path_input = '/home/dunglx/Working/Performance/raw'
+# throughput_path_output = '/home/dunglx/Working/Performance/csv/result.csv'
+# throughput_path_input = '/home/dunglx/Working/Performance/raw'
+throughput_path_output = ""
+throughput_path_input = ""
 
-latency_path_output = '/home/dunglx/Working/Performance/csv/result.csv'
-latency_path_input = '/home/dunglx/Working/Performance/raw'
+# latency_path_output = '/home/dunglx/Working/Performance/csv/result.csv'
+# latency_path_input = '/home/dunglx/Working/Performance/raw'
+latency_path_output = ""
+latency_path_input = ""
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -31,6 +35,14 @@ if __name__ == '__main__':
         throughput_path_input = filename
         entry_throughput_input.insert(0, throughput_path_input.name)
 
+    def browsefiles_throughput_output():
+        global throughput_path_output
+        filename = filedialog.askdirectory()
+        print(filename)
+        throughput_path_output = filename
+        # ??? dung gi cho viec hien thi duong dan output
+        label_throughput_output.config(text=throughput_path_output)
+
     # Ham xu ly browse Files throughput input
     def browsefiles_latency_input():
         global latency_path_input
@@ -39,40 +51,22 @@ if __name__ == '__main__':
         entry_throughput_input.insert(0, latency_path_input.name)
 
     # Ham xu ly khi click vao button Export
-    def export_configuration():
-        # Khi click vao button Export bat len mot cua so moi de cau hinh xu ly file ket qua
-        # Export window
-        window_export = Toplevel(window)
-        window_export.geometry("500x500")
-        window_export.title("Cau hinh export")
-        Label(window_export, text="This is export window").pack()
-
-        # Frame cho cau hinh
-        dir_export_frame = Frame(window_export)
-        dir_export_frame.pack()
-        label_dir = Label(dir_export_frame, text="Output")
-        label_dir.grid(row=0, column=0)
-        entry_dir = Entry(dir_export_frame)
-        entry_dir.grid(row=0, column=1)
-        button_dir = Button(dir_export_frame, text="...")
-        button_dir.grid(row=0, column=2)
-
-        button_process = Button(window_export, text="OK", command=process_throughput_input)
-        button_process.pack()
-        dir_export = filedialog.askdirectory()
-        global path_csv
-        path_csv = dir_export
-        print(path_csv)
-
     def process_throughput_input():
+        global throughput_path_input
+        global throughput_path_output
         a = bitrate.array('d', [0.0])  # Mbps
         b = bitrate.array('i', [0])  # seconds
         # a = []
         # b = []
         print("Ket qua da duoc ghi ra file")
-        file_name = path_raw.name
+        file_name = throughput_path_input.name
         filename, file_extension = os.path.splitext(file_name)
-        # print(file_extension)
+        x = filename.split('/')
+        throughput_path_output_will_open = throughput_path_output
+        throughput_path_output_will_open += "/"
+        throughput_path_output_will_open += x[len(x) - 1]
+        max_throughput = 0
+
         if file_extension == ".json":
             print('File json')
             with open(file_name, 'r') as f:
@@ -100,7 +94,16 @@ if __name__ == '__main__':
                 avg_received = int(sum_received['bits_per_second'] / 1000000)
                 sum_avg = 'avg_received:' + f'{avg_received}' + ' --- ' + 'avg_sent:' + f'{avg_sent}'
                 print(sum_avg)
-                print(a)
+                max_throughput = int(numpy.max(a))
+                print(max_throughput)
+                throughput_path_output_will_open += "-max-"
+                throughput_path_output_will_open += str(max_throughput)
+                throughput_path_output_will_open += "-avg_sent-"
+                throughput_path_output_will_open += str(avg_sent)
+                throughput_path_output_will_open += "-avg-received-"
+                throughput_path_output_will_open += str(avg_received)
+
+                # print(a)
         elif file_extension == ".txt":
             # print('File text')
             with open(file_name, 'r') as fp:
@@ -112,21 +115,24 @@ if __name__ == '__main__':
                         break
                     else:
                         substr = line.split()
-                        print(substr)
+                        # print(substr)
                         # Check element nao ma truoc do la MBytes sau la Mbits/sec thi lay no vao mang
                         for i in range(len(substr)):
-                            print(i)
+                            #print(i)
                             if (substr[i] == "MBytes") and (substr[i + 2] == "Mbits/sec"):
                                 a.append(float(substr[i+1]))
-                                print(substr[i+1])
+                                # print(substr[i+1])
                                 time += 1
                                 b.append(time)
                                 break
-                print(a)
+                # print(a)
         else:
             print('Tool khong ho tro dinh dang file nay. Check lai')
 
-        with open(path_csv, 'w+') as fp:
+        throughput_path_output_will_open += ".csv"
+        print("DungLX Test ====")
+        print(throughput_path_output_will_open)
+        with open(throughput_path_output_will_open, 'w+') as fp:
             writer = csv.writer(fp)
             for x in a: writer.writerow([x])
 
@@ -135,8 +141,6 @@ if __name__ == '__main__':
         plt.title('Do thi throughput')
         plt.xlabel('Seconds')
         plt.ylabel('Mbps')
-        max_throughput = numpy.max(a)
-        print(max_throughput)
         x_text = (b[len(b)-1] // 2)
         y_text = (max_throughput // 2)
         current_time = datetime.datetime.now()
@@ -144,6 +148,7 @@ if __name__ == '__main__':
         plt.text(x_text, y_text - 30, "Max throughput: ")
         plt.text(x_text + 8, y_text - 30, max_throughput)
         plt.show()
+
 
     # 1. Tao cua so giao dien chinh
     window = Tk()
@@ -161,8 +166,8 @@ if __name__ == '__main__':
     tabsystem.add(tab_latency, text="Latency")
     tabsystem.pack(expand=1, fill="both")
 
-    label_file_explorer = Label(tab_throughput, text="Xu ly ket qua test Throughput (.json, .txt, ...")
-    label_file_explorer.pack()
+    label_tab_throughput = Label(tab_throughput, text="Xu ly ket qua test Throughput (.json, .txt, ...)")
+    label_tab_throughput.pack()
 
     # 2.1.1 Frame input trong Tab Throughput
     frame_throughput_input = Frame(tab_throughput)
@@ -174,8 +179,8 @@ if __name__ == '__main__':
     entry_throughput_input = Entry(frame_throughput_input)
     entry_throughput_input.grid(row=0, column=1)
 
-    button_throughput_explore = Button(frame_throughput_input, text="...", command=browsefiles_throughput_input)
-    button_throughput_explore.grid(row=0, column=2)
+    button_throughput_input_explore = Button(frame_throughput_input, text="...", command=browsefiles_throughput_input)
+    button_throughput_input_explore.grid(row=0, column=2)
 
     # 2.1.2 Frame output trong Tab Throughput
     frame_throughput_output = Frame(tab_throughput)
@@ -184,16 +189,18 @@ if __name__ == '__main__':
     label_throughput_output = Label(frame_throughput_output, text="Output: ")
     label_throughput_output.grid(row=0, column=0)
 
-    label_throughput_output = Entry(frame_throughput_input)
+    label_throughput_output = Label(frame_throughput_output, text="Path to output")
     label_throughput_output.grid(row=0, column=1)
 
-    button_throughput_explore = Button(frame_throughput_input, text="...", command=browsefiles_throughput_output)
-    button_throughput_explore.grid(row=0, column=2)
+    button_throughput_output_explore = Button(frame_throughput_output, text="...", command=browsefiles_throughput_output)
+    button_throughput_output_explore.grid(row=0, column=2)
 
-    button_export = Button(tab_throughput, text="Export", command=export_configuration)
+    button_export = Button(tab_throughput, text="Export", command=process_throughput_input)
     button_export.pack()
 
     # 2.2 Tab Latency
+    label_tab_latency = Label(tab_latency, text="Xu ly ket qua test Ping (.json, .txt, ...")
+    label_tab_latency.pack()
 
     window.mainloop()
 
