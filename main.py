@@ -14,14 +14,9 @@ import matplotlib.pyplot as plt
 import datetime
 import numpy
 
-
-# throughput_path_output = '/home/dunglx/Working/Performance/csv/result.csv'
-# throughput_path_input = '/home/dunglx/Working/Performance/raw'
 throughput_path_output = ""
 throughput_path_input = ""
 
-# latency_path_output = '/home/dunglx/Working/Performance/csv/result.csv'
-# latency_path_input = '/home/dunglx/Working/Performance/raw'
 latency_path_output = ""
 latency_path_input = ""
 
@@ -71,7 +66,6 @@ if __name__ == '__main__':
             print('File json')
             with open(file_name, 'r') as f:
                 data = json.load(f)
-                print(data)
                 # Xử lý data
                 intervals = data['intervals']
                 # Khoi tao
@@ -115,17 +109,13 @@ if __name__ == '__main__':
                         break
                     else:
                         substr = line.split()
-                        # print(substr)
                         # Check element nao ma truoc do la MBytes sau la Mbits/sec thi lay no vao mang
                         for i in range(len(substr)):
-                            #print(i)
                             if (substr[i] == "MBytes") and (substr[i + 2] == "Mbits/sec"):
                                 a.append(float(substr[i+1]))
-                                # print(substr[i+1])
                                 time += 1
                                 b.append(time)
                                 break
-                # print(a)
         else:
             print('Tool khong ho tro dinh dang file nay. Check lai')
 
