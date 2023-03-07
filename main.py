@@ -43,9 +43,17 @@ if __name__ == '__main__':
         global latency_path_input
         filename = filedialog.askopenfile(initialdir="/home/dunglx/Working/Performance/raw", title="Select a File", filetypes=(("Text files", "*.txt"),("Json files", "*.json"),("All files", "*.*")))
         latency_path_input = filename
-        entry_throughput_input.insert(0, latency_path_input.name)
+        entry_latency_input.insert(0, latency_path_input.name)
 
-    # Ham xu ly khi click vao button Export
+    def browsefiles_latency_output():
+        global latency_path_output
+        filename = filedialog.askdirectory()
+        print(filename)
+        latency_path_output = filename
+        # ??? dung gi cho viec hien thi duong dan output
+        label_latency_output.config(text=latency_path_output)
+
+    # Ham xu ly khi click vao button Export trong tab throughput
     def process_throughput_input():
         global throughput_path_input
         global throughput_path_output
@@ -139,6 +147,41 @@ if __name__ == '__main__':
         plt.text(x_text + 8, y_text - 30, max_throughput)
         plt.show()
 
+    def process_latency_input():
+        global latency_path_input
+        global latency_path_output
+        a = bitrate.array('d', [0.0])  # ms
+        b = bitrate.array('i', [0])  # seconds
+
+        file_name = latency_path_input.name
+        with open(file_name, 'r') as f:
+            lines = f.readlines()
+
+            for line in lines: # 64 bytes from hkg07s50-in-f14.1e100.net (142.251.220.46): icmp_seq=134 ttl=113 time=20.3 ms
+                               # Reply from x.x.x.x: bytes=32 time=xxms TTL=xx
+                substr = line.split()
+                for i in range(len(substr)):
+                    if "time=" in substr[i]:
+                        print(substr[i])
+                        if "ms" in substr[i]:
+                            time = substr[i].split('=')
+                            rtt = time[1].split("ms")
+                            a.append(int(rtt[0]))
+                        else:
+                            time = substr[i].split('=')
+                            a.append(float(time[1]))
+                    # else:
+                    #    print("File ket qua sai dinh dang.")
+            print(a)
+        filename, file_extension = os.path.splitext(file_name)
+        lastname = filename.split('/')
+        latency_path_output_will_open = latency_path_output
+        latency_path_output_will_open += "/"
+        latency_path_output_will_open += lastname[len(lastname) - 1]
+        latency_path_output_will_open += ".csv"
+        with open(latency_path_output_will_open, 'w+') as fp:
+            writer = csv.writer(fp)
+            for x in a: writer.writerow([x])
 
     # 1. Tao cua so giao dien chinh
     window = Tk()
@@ -185,12 +228,41 @@ if __name__ == '__main__':
     button_throughput_output_explore = Button(frame_throughput_output, text="...", command=browsefiles_throughput_output)
     button_throughput_output_explore.grid(row=0, column=2)
 
-    button_export = Button(tab_throughput, text="Export", command=process_throughput_input)
-    button_export.pack()
+    button_throughput_export = Button(tab_throughput, text="Export", command=process_throughput_input)
+    button_throughput_export.pack()
 
     # 2.2 Tab Latency
-    label_tab_latency = Label(tab_latency, text="Xu ly ket qua test Ping (.json, .txt, ...")
+    label_tab_latency = Label(tab_latency, text="Xu ly ket qua test Ping (.txt, ...)")
     label_tab_latency.pack()
+
+    # 2.2.1 Frame input trong Tab Latency
+    frame_latency_input = Frame(tab_latency)
+    frame_latency_input.pack()
+
+    label_latency_input = Label(frame_latency_input, text="Input: ")
+    label_latency_input.grid(row=0, column=0)
+
+    entry_latency_input = Entry(frame_latency_input)
+    entry_latency_input.grid(row=0, column=1)
+
+    button_latency_input_explore = Button(frame_latency_input, text="...", command=browsefiles_latency_input)
+    button_latency_input_explore.grid(row=0, column=2)
+
+    # 2.2.2 Frame output trong Tab Latency
+    frame_latency_output = Frame(tab_latency)
+    frame_latency_output.pack()
+
+    label_latency_output = Label(frame_latency_output, text="Output folder: ")
+    label_latency_output.grid(row=0, column=0)
+
+    label_latency_output = Label(frame_latency_output, text="Path to output")
+    label_latency_output.grid(row=0, column=1)
+
+    button_latency_output_explore = Button(frame_latency_output, text="...", command=browsefiles_latency_output)
+    button_latency_output_explore.grid(row=0, column=2)
+
+    button_latency_export = Button(tab_latency, text="Export", command=process_latency_input)
+    button_latency_export.pack()
 
     window.mainloop()
 
