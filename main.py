@@ -176,7 +176,7 @@ if __name__ == '__main__':
     frame_throughput_output = Frame(tab_throughput)
     frame_throughput_output.pack()
 
-    label_throughput_output = Label(frame_throughput_output, text="Output: ")
+    label_throughput_output = Label(frame_throughput_output, text="Output folder: ")
     label_throughput_output.grid(row=0, column=0)
 
     label_throughput_output = Label(frame_throughput_output, text="Path to output")
