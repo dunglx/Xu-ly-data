@@ -13,12 +13,16 @@ import json
 import matplotlib.pyplot as plt
 import datetime
 import numpy
+from ping3 import ping
+from multiprocessing import Process
 
 throughput_path_output = ""
 throughput_path_input = ""
 
 latency_path_output = ""
 latency_path_input = ""
+
+ping_path_output = ""
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -52,6 +56,27 @@ if __name__ == '__main__':
         latency_path_output = filename
         # ??? dung gi cho viec hien thi duong dan output
         label_latency_output.config(text=latency_path_output)
+
+    def browsefiles_ping_output():
+        global ping_path_output
+        filename = filedialog.askdirectory()
+        print(filename)
+        ping_path_output = filename
+        # ??? dung gi cho viec hien thi duong dan output
+        label_ping_outputdp.config(text=ping_path_output)
+
+    def run_ping(name):
+        print(name)
+
+    def process_do_ping():
+        print("Thuc hien ping ...")
+        resp = ping('www.google.com', timeout=10, unit='ms')
+        print(resp)
+        inputs = ['8.8.8.8', 'www.google.com']
+        for input in inputs:
+            p = Process(target=run_ping, args=(input,))
+            p.start()
+        p.join()
 
     # Ham xu ly khi click vao button Export trong tab throughput
     def process_throughput_input():
@@ -193,10 +218,12 @@ if __name__ == '__main__':
     tabsystem = ttk.Notebook(window)
     tab_throughput = Frame(tabsystem)
     tab_latency = Frame(tabsystem)
+    tab_ping = Frame(tabsystem)
 
     # 2.1 Tab throughput
     tabsystem.add(tab_throughput, text="Throughput")
     tabsystem.add(tab_latency, text="Latency")
+    tabsystem.add(tab_ping, text="Do Ping")
     tabsystem.pack(expand=1, fill="both")
 
     label_tab_throughput = Label(tab_throughput, text="Xu ly ket qua test Throughput (.json, .txt, ...)")
@@ -263,6 +290,23 @@ if __name__ == '__main__':
 
     button_latency_export = Button(tab_latency, text="Export", command=process_latency_input)
     button_latency_export.pack()
+
+    # 2.3 Tab Do Ping
+    # 2.3.1 Frame output trong Tab Throughput
+    frame_ping_output = Frame(tab_ping)
+    frame_ping_output.pack()
+
+    label_ping_output = Label(frame_ping_output, text="Output folder: ")
+    label_ping_output.grid(row=0, column=0)
+
+    label_ping_outputdp = Label(frame_ping_output, text="Path to output")
+    label_ping_outputdp.grid(row=0, column=1)
+
+    button_ping_output_explore = Button(frame_ping_output, text="...", command=browsefiles_ping_output)
+    button_ping_output_explore.grid(row=0, column=2)
+
+    button_doping = Button(tab_ping, text="Do Ping ...", command=process_do_ping)
+    button_doping.pack()
 
     window.mainloop()
 
